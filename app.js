@@ -9,8 +9,16 @@ dotenv.config();
 
 const app = express();
 
-// Connect to database
-connectDB();
+// Database Connection Middleware (for Serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('Database connection middleware error:', error);
+    res.status(500).json({ success: false, message: 'Database connection failed' });
+  }
+});
 
 // Middleware
 app.use(cors());
