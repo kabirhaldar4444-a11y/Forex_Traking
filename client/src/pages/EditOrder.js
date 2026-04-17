@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { INDIAN_STATES, PRODUCTS, STATUSES } from '../constants';
 import '../styles/Dashboard.css';
@@ -28,9 +28,9 @@ const EditOrder = () => {
 
   useEffect(() => {
     fetchOrder();
-  }, [id]);
+  }, [id, fetchOrder]);
 
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
@@ -64,7 +64,7 @@ const EditOrder = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

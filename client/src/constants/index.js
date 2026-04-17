@@ -1,4 +1,3 @@
-import React from 'react';
 
 export const INDIAN_STATES = [
   'Andaman and Nicobar Islands',

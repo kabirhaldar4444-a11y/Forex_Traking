@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllOrders, updateOrder } from '../services/auth';
 import '../styles/Dashboard.css';
@@ -9,7 +9,6 @@ const Dashboard = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('all');
   const navigate = useNavigate();
@@ -17,24 +16,24 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [fetchOrders]);
 
   useEffect(() => {
     filterOrders();
-  }, [orders, searchTerm, searchType]);
+  }, [orders, searchTerm, searchType, filterOrders]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const response = await getAllOrders();
       setOrders(response.data.orders);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch orders');
+      console.error(err.response?.data?.message || 'Failed to fetch orders');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filterOrders = () => {
+  const filterOrders = useCallback(() => {
     const term = searchTerm.toLowerCase().trim();
     if (!term) {
       setFilteredOrders(orders);
@@ -56,7 +55,7 @@ const Dashboard = () => {
       }
     });
     setFilteredOrders(filtered);
-  };
+  }, [orders, searchTerm, searchType]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');

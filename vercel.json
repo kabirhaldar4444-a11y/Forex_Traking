@@ -48,5 +48,8 @@
       "status": 200,
       "dest": "/client/index.html"
     }
-  ]
+  ],
+  "env": {
+    "CI": "false"
+  }
 }
