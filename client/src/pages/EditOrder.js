@@ -26,10 +26,6 @@ const EditOrder = () => {
     shippingFromAddress: ''
   });
 
-  useEffect(() => {
-    fetchOrder();
-  }, [id, fetchOrder]);
-
   const fetchOrder = useCallback(async () => {
     try {
       setLoading(true);
@@ -65,6 +61,10 @@ const EditOrder = () => {
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [id, fetchOrder]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

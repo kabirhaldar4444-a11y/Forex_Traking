@@ -14,14 +14,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
-
-  useEffect(() => {
-    filterOrders();
-  }, [orders, searchTerm, searchType, filterOrders]);
-
   const fetchOrders = useCallback(async () => {
     try {
       const response = await getAllOrders();
@@ -56,6 +48,14 @@ const Dashboard = () => {
     });
     setFilteredOrders(filtered);
   }, [orders, searchTerm, searchType]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    filterOrders();
+  }, [orders, searchTerm, searchType, filterOrders]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
