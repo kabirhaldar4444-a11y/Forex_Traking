@@ -1,0 +1,207 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createOrder } from '../services/auth';
+import { INDIAN_STATES, PRODUCTS, STATUSES } from '../constants';
+import '../styles/Dashboard.css'; /* Reuse dashboard layout styles */
+import logo from '../images/Forexshipping.png';
+
+const CreateOrder = () => {
+  const [formData, setFormData] = useState({
+    customerName: '',
+    email: '',
+    phone: '',
+    deliveryAddress: '',
+    state: '',
+    customState: '',
+    productName: '',
+    quantity: 1,
+    status: 'pending',
+    companyName: '',
+    shippingFromAddress: ''
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'phone') {
+      const phoneValue = value.replace(/\D/g, '');
+      setFormData(prev => ({ ...prev, [name]: phoneValue }));
+      return;
+    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const response = await createOrder(formData);
+      setSuccess(`Order created successfully! Tracking ID: ${response.data.order.trackingId}`);
+      setTimeout(() => navigate('/dashboard'), 2000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create order');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
+  return (
+    <div className="dashboard-container">
+      {/* Sidebar Navigation */}
+      <aside className="dashboard-nav-sidebar">
+        <div className="sidebar-header">
+           <div className="sidebar-brand">
+             <img src={logo} alt="Logo" className="logo" />
+             <span className="name">FOREXSHIPPING</span>
+           </div>
+        </div>
+        
+        <div className="sidebar-links">
+          <button className="sidebar-link" onClick={() => navigate('/dashboard')}>
+            <span>📊</span> Dashboard
+          </button>
+          <button className="sidebar-link active" onClick={() => navigate('/create-order')}>
+            <span>➕</span> New Shipment
+          </button>
+          <button className="sidebar-link" onClick={() => navigate('/')}>
+            <span>🌐</span> Public Portal
+          </button>
+        </div>
+
+        <div className="sidebar-footer">
+          <button className="logout-btn-sidebar" onClick={handleLogout}>
+            <span>🚪</span> Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="dashboard-content">
+        <header className="dashboard-top-header">
+          <h1>Generate New Shipment</h1>
+          <div className="user-badge">
+            <div className="user-avatar">{user.name ? user.name[0].toUpperCase() : 'A'}</div>
+            <span className="user-name">Admin: {user.name}</span>
+          </div>
+        </header>
+
+        <div className="dashboard-section-card" style={{ maxWidth: '900px' }}>
+          <div className="section-header">
+            <h2>Shipment Details</h2>
+            {success && <div style={{ color: '#059669', fontWeight: 700 }}>{success}</div>}
+            {error && <div style={{ color: '#dc2626', fontWeight: 700 }}>{error}</div>}
+          </div>
+
+          <form onSubmit={handleSubmit} className="premium-form">
+            {/* Customer Section */}
+            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px', marginBottom: '40px' }}>
+              <div className="premium-input-wrap">
+                <label>Customer Full Name *</label>
+                <input type="text" name="customerName" value={formData.customerName} onChange={handleInputChange} required placeholder="e.g. John Doe" />
+              </div>
+              <div className="premium-input-wrap">
+                <label>Email Address *</label>
+                <input type="email" name="email" value={formData.email} onChange={handleInputChange} required placeholder="customer@example.com" />
+              </div>
+              <div className="premium-input-wrap">
+                <label>Phone Number *</label>
+                <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required placeholder="Number only" />
+              </div>
+              <div className="premium-input-wrap">
+                <label>Destination State *</label>
+                <select name="state" value={formData.state} onChange={handleInputChange} required>
+                  <option value="">Select State</option>
+                  {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              {formData.state === 'Others' && (
+                <div className="premium-input-wrap">
+                  <label>Specify State *</label>
+                  <input type="text" name="customState" value={formData.customState} onChange={handleInputChange} required />
+                </div>
+              )}
+              <div className="premium-input-wrap" style={{ gridColumn: 'span 2' }}>
+                <label>Delivery Address *</label>
+                <input type="text" name="deliveryAddress" value={formData.deliveryAddress} onChange={handleInputChange} required placeholder="Full street address" />
+              </div>
+            </div>
+
+            {/* Product Section */}
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e1b4b', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Package Info</h3>
+            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.5fr 1fr', gap: '25px', marginBottom: '40px' }}>
+              <div className="premium-input-wrap">
+                <label>Product Name *</label>
+                <select name="productName" value={formData.productName} onChange={handleInputChange} required>
+                  <option value="">Select Category</option>
+                  {PRODUCTS.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div className="premium-input-wrap">
+                <label>Qty *</label>
+                <input type="number" name="quantity" value={formData.quantity} onChange={handleInputChange} min="1" required />
+              </div>
+              <div className="premium-input-wrap">
+                <label>Initial Status *</label>
+                <select name="status" value={formData.status} onChange={handleInputChange} required>
+                  {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Origin Section */}
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e1b4b', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Origin Details</h3>
+            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px', marginBottom: '40px' }}>
+              <div className="premium-input-wrap">
+                <label>Origin Company *</label>
+                <input type="text" name="companyName" value={formData.companyName} onChange={handleInputChange} required placeholder="e.g. PMIUSA" />
+              </div>
+              <div className="premium-input-wrap">
+                <label>Origin Address *</label>
+                <input type="text" name="shippingFromAddress" value={formData.shippingFromAddress} onChange={handleInputChange} required placeholder="e.g. Miami, FL" />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '15px' }}>
+               <button type="submit" className="nav-btn solid" style={{ padding: '15px 40px', borderRadius: '14px', fontSize: '1rem' }} disabled={loading}>
+                 {loading ? 'Generating...' : 'Confirm & Create Shipment'}
+               </button>
+               <button type="button" className="nav-btn outline" onClick={() => navigate('/dashboard')} style={{ padding: '15px 30px', borderRadius: '14px', color: '#1e1b4b', borderColor: '#e2e8f0' }}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      </main>
+
+      <style>{`
+        .premium-input-wrap { display: flex; flex-direction: column; gap: 8px; }
+        .premium-input-wrap label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .premium-input-wrap input, .premium-input-wrap select { 
+          padding: 12px 18px; 
+          border-radius: 12px; 
+          border: 1px solid #e2e8f0; 
+          background: #f8fafc; 
+          font-weight: 600; 
+          color: #1e1b4b; 
+          outline: none; 
+          transition: all 0.2s;
+        }
+        .premium-input-wrap input:focus, .premium-input-wrap select:focus { border-color: #6366f1; background: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1); }
+      `}</style>
+    </div>
+  );
+};
+
+export default CreateOrder;
