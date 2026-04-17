@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ForexShipping Admin Panel
 
 A complete MERN (MongoDB, Express, React, Node.js) stack application for managing shipping orders with admin authentication.
@@ -243,3 +244,6 @@ ISC
 ## Support
 
 For issues or questions, please contact the development team.
+=======
+# Forex_Traking
+>>>>>>> e5259c2b293eba54c57690d60feb1723edaed559
